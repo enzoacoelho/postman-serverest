@@ -1,0 +1,362 @@
+{
+  "info": {
+    "_postman_id": "9e91802d-df30-4585-9493-592cabeecb38",
+    "name": "ServeRest - Usuários",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cadastrar usuário",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de sucesso e capturar ID/Email\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Cadastro realizado com sucesso\");",
+              "    pm.expect(resData._id).to.be.a('string');",
+              "    ",
+              "    // Captura o ID gerado e o e-mail enviado para uso nas próximas requisições",
+              "    pm.collectionVariables.set(\"userId\", resData._id);",
+              "    ",
+              "    const reqData = JSON.parse(pm.request.body.raw);",
+              "    pm.collectionVariables.set(\"createdEmail\", reqData.email);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"administrador\": \"true\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}usuarios",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Cadastrar usuário com e-mail já cadastrado - Cenário Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de e-mail duplicado\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Este email já está sendo usado\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{$randomFullName}}\",\n  \"email\": \"{{createdEmail}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"administrador\": \"true\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}usuarios",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Listar usuários cadastrados",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Deve validar que a propriedade usuarios está presente\", function () {",
+              "    pm.expect(pm.response.json()).to.have.property('usuarios');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}usuarios",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Buscar usuário por ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Deve validar se o ID retornado é o mesmo consultado\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData._id).to.eql(pm.collectionVariables.get(\"userId\"));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}usuarios/{{userId}}",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ],
+          "path": [
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Buscar usuário inexistente - Cenário Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de usuário não encontrado\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Usuário não encontrado\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}usuarios/ID_INEXISTENTE_123",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ],
+          "path": [
+            "ID_INEXISTENTE_123"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Atualizar usuário",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de alteração com sucesso\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Registro alterado com sucesso\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{$randomFullName}} Editado\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"{{$randomPassword}}\",\n  \"administrador\": \"true\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}usuarios/{{userId}}",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ],
+          "path": [
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deletar usuário",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de exclusão com sucesso\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Registro excluído com sucesso\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}usuarios/{{userId}}",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ],
+          "path": [
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deletar usuário não cadastrado - Cenário Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Deve validar status code 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Deve validar mensagem de nenhum registro excluído\", function () {",
+              "    const resData = pm.response.json();",
+              "    pm.expect(resData.message).to.eql(\"Nenhum registro excluído\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}usuarios/ID_INEXISTENTE_123",
+          "host": [
+            "{{baseUrl}}usuarios"
+          ],
+          "path": [
+            "ID_INEXISTENTE_123"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdEmail",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
